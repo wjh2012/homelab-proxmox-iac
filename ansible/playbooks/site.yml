@@ -1,0 +1,6 @@
+---
+- name: Configure Ubuntu VMs
+  hosts: ubuntu
+  become: true
+  roles:
+    - common
