@@ -25,6 +25,11 @@ Proxmox 클러스터 `homelab`의 VM을 Terraform(생성) + Ansible(VM 내부 �
 | VM 사용자 | `wjh2012` + 비밀번호 |
 | VM ID 대역 | 300번대 = 테스트, 8000번대 = 기존 템플릿 (미관리) |
 
+VM 사용자명을 바꾸려면 `proxmox/terraform.tfvars`에 `vm_username = "새사용자명"`을 지정하고,
+`ansible/inventory/group_vars/all.yml`의 `ansible_user`도 같은 값으로 수정한다.
+두 설정은 자동으로 연동되지 않는다. 아래 SSH 예시의 `wjh2012`도 지정한 사용자명으로 바꾼다.
+기존 VM의 사용자명 변경은 cloud-init 설정 변경만으로 적용되지 않을 수 있으므로 VM 내부에서 별도로 처리한다.
+
 ## 1. 작업 PC 준비 (최초 1회)
 
 Terraform은 Windows, Ansible은 WSL Ubuntu에서 실행한다.
@@ -146,8 +151,13 @@ ansible-playbook playbooks/site.yml -k -K  # -K: sudo 비밀번호 입력
 
 - `proxmox/terraform.tfstate`에 VM 비밀번호가 평문으로 저장된다. git에 올리지 않는다 (`.gitignore` 처리됨).
   state 파일을 잃어버리면 Terraform이 기존 VM을 인식하지 못하므로 따로 백업한다.
-- Ubuntu 이미지는 `overwrite = false`라 upstream이 갱신돼도 다시 받지 않는다 (교체되면 VM이 재생성되기 때문).
-  새 이미지가 필요하면 `terraform apply -replace='proxmox_download_file.ubuntu_2404["n100-01"]'`.
+- Ubuntu 이미지는 `overwrite = false`라 upstream이 갱신돼도 자동으로 다시 받지 않는다.
+  `proxmox/`에서 `terraform apply -replace='proxmox_download_file.ubuntu_2404["n100-01"]'`을 실행하면
+  해당 노드의 다운로드 이미지를 갱신한다. 다른 노드도 갱신하려면 노드별로 실행한다.
+  `disk.import_from`은 디스크 최초 생성에만 사용되므로 새 이미지는 이후 생성하는 VM에 적용되고,
+  기존 VM은 재생성되거나 OS가 갱신되지 않는다.
+  기존 VM의 OS 패키지는 VM 내부에서 업데이트한다. 새 이미지로 다시 구축하려면 필요한 데이터를 백업하고,
+  해당 VM 리소스를 명시적으로 교체해야 한다 (기존 VM과 디스크가 삭제됨).
 
 ## 문제 해결
 

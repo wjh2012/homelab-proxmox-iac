@@ -8,7 +8,7 @@ resource "proxmox_download_file" "ubuntu_2404" {
   url          = "https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img"
   file_name    = "noble-server-cloudimg-amd64.qcow2"
 
-  # upstream 이미지가 갱신돼도 다시 받지 않음 (교체되면 VM이 재생성됨)
+  # upstream 이미지가 갱신돼도 자동으로 다시 받지 않음. 갱신한 이미지는 이후 생성하는 VM에 적용됨.
   overwrite = false
 }
 
