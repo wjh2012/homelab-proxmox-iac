@@ -1,0 +1,7 @@
+#cloud-config
+# 최초 부팅에 필요한 최소 설정만. 나머지는 Ansible이 담당.
+ssh_pwauth: true
+packages:
+  - qemu-guest-agent
+runcmd:
+  - systemctl enable --now qemu-guest-agent
